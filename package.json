@@ -1,0 +1,17 @@
+{
+  "private": true,
+  "scripts": {
+    "dev": "slidev",
+    "build": "slidev build",
+    "export": "slidev export"
+  },
+  "dependencies": {
+    "@slidev/cli": "latest",
+    "@slidev/theme-default": "latest",
+    "@slidev/theme-seriph": "latest",
+    "@types/dompurify": "^3.0.5",
+    "dompurify": "^3.2.7",
+    "isomorphic-dompurify": "^2.28.0",
+    "react-hook-form": "^7.63.0"
+  }
+}
