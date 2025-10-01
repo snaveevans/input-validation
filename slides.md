@@ -671,7 +671,7 @@ layout: default
 
 # react-hook-form Example
 
-```typescript {all|1|3-8|10-14|16-26|28-36|all}
+```typescript {all|1|2-4|6|12-21|10|all}
 import { useForm } from 'react-hook-form';
 interface LoginFormData {
   email: string;
