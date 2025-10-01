@@ -276,7 +276,6 @@ Rendering user input as HTML content
 
 - `textContent`
 - `innerText`
-- `setAttribute()` (for non-event attributes)
 - Template literals with escaping
 
 </v-clicks>
@@ -389,16 +388,10 @@ eval(`console.log("${userInput}")`);  // DANGEROUS!
 const script = `var name = "${userInput}";`;  // DANGEROUS!
 ```
 
-### Safe Alternatives
+### Safe Alternative
 ```javascript
 // Use JSON for data passing
 const config = JSON.parse(safeJSONString);
-
-// Use data attributes
-<div data-user-name={sanitizedName}></div>
-
-// Pass through proper APIs
-window.postMessage({ name: userName }, targetOrigin);
 ```
 
 </v-clicks>
