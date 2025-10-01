@@ -9,8 +9,10 @@
     "dev": "npm run dev --workspace=packages/form-playground",
     "dev:slides": "npm run dev --workspace=packages/slidev-presentation",
     "dev:playground": "npm run dev --workspace=packages/form-playground",
+    "dev:starter": "npm run dev --workspace=packages/form-challenges-starter",
     "build": "npm run build --workspaces --if-present",
     "build:slides": "npm run build --workspace=packages/slidev-presentation",
-    "build:playground": "npm run build --workspace=packages/form-playground"
+    "build:playground": "npm run build --workspace=packages/form-playground",
+    "build:starter": "npm run build --workspace=packages/form-challenges-starter"
   }
 }
