@@ -842,8 +842,6 @@ class: text-center
 
 # Key Takeaways
 
-::left::
-
 <v-clicks>
 
 - XSS vulnerabilities come in three types: Reflected, Stored, and DOM-based
