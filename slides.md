@@ -767,31 +767,6 @@ const dirty = '<img src=x onerror=alert(1)>';
 const clean = DOMPurify.sanitize(dirty);
 console.log(clean);
 // Output: <img src="x">
-
-// Custom configuration
-const clean = DOMPurify.sanitize(dirty, {
-  ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p'],
-  ALLOWED_ATTR: ['href'],
-  ALLOW_DATA_ATTR: false
-});
-
-// React component example
-function UserComment({ htmlContent }) {
-  const clean = DOMPurify.sanitize(htmlContent, {
-    ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'a'],
-    ALLOWED_ATTR: ['href']
-  });
-
-  return <div dangerouslySetInnerHTML={{ __html: clean }} />;
-}
-
-// Real-world example: sanitizing markdown output
-import { marked } from 'marked';
-
-function renderMarkdown(markdown) {
-  const html = marked(markdown);
-  return DOMPurify.sanitize(html);
-}
 ```
 
 <!--
