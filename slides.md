@@ -759,7 +759,7 @@ layout: default
 
 # DOMPurify Example
 
-```javascript {all|1|3-9|11-15|17-23|all}
+```javascript {all}
 import DOMPurify from 'dompurify';
 
 // Basic sanitization
