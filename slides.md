@@ -676,7 +676,6 @@ import { useForm } from 'react-hook-form';
 
 interface LoginFormData {
   email: string;
-  password: string;
 }
 
 function LoginForm() {
@@ -697,16 +696,6 @@ function LoginForm() {
         }
       })} />
       {errors.email && <span>{errors.email.message}</span>}
-
-      <input type="password" {...register('password', {
-        required: 'Password is required',
-        minLength: {
-          value: 8,
-          message: 'Password must be at least 8 characters'
-        }
-      })} />
-      {errors.password && <span>{errors.password.message}</span>}
-
       <button type="submit">Login</button>
     </form>
   );
