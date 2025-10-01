@@ -176,7 +176,6 @@ Malicious script is permanently stored on the server (database, file system, etc
 </v-clicks>
 
 ```javascript {all|3-8|10-14|all}
-// Vulnerable code - storing comment without sanitization
 async function saveComment(userId, text) {
   await db.comments.insert({
     user_id: userId,
@@ -185,7 +184,6 @@ async function saveComment(userId, text) {
   });
 }
 
-// Later, when rendering comments
 function renderComments() {
   return comments.map(c =>
     `<div class="comment">${c.comment_text}</div>`
