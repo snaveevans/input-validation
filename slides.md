@@ -673,19 +673,15 @@ layout: default
 
 ```typescript {all|1|3-8|10-14|16-26|28-36|all}
 import { useForm } from 'react-hook-form';
-
 interface LoginFormData {
   email: string;
 }
-
 function LoginForm() {
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormData>();
-
   const onSubmit = (data: LoginFormData) => {
     // Data is already validated!
     console.log(data);
   };
-
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <input {...register('email', {
