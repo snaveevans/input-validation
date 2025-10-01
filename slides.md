@@ -176,6 +176,7 @@ Malicious script is permanently stored on the server (database, file system, etc
 </v-clicks>
 
 ```javascript {all|3-8|10-14|all}
+// Vulnerable code - storing comment without sanitization
 async function saveComment(userId, text) {
   await db.comments.insert({
     user_id: userId,
@@ -184,6 +185,7 @@ async function saveComment(userId, text) {
   });
 }
 
+// Later, when rendering comments
 function renderComments() {
   return comments.map(c =>
     `<div class="comment">${c.comment_text}</div>`
@@ -219,13 +221,13 @@ Vulnerability exists in client-side code; server never sees the malicious payloa
 
 </v-clicks>
 
-```javascript {all|1-2|4-6|all}
-// Attacker crafts URL
-// https://example.com/#<img src=x onerror='alert(document.cookie)'>
-
+```javascript {all|2-3|5-8|all}
 // Vulnerable: reading from URL hash
 const userInput = location.hash.substring(1);
 document.getElementById('welcome').innerHTML = userInput;
+
+// Attacker crafts URL
+// https://example.com/#<img src=x onerror='alert(document.cookie)'>
 
 // No server interaction needed!
 ```
@@ -276,6 +278,7 @@ Rendering user input as HTML content
 
 - `textContent`
 - `innerText`
+- `setAttribute()` (for non-event attributes)
 - Template literals with escaping
 
 </v-clicks>
@@ -388,10 +391,16 @@ eval(`console.log("${userInput}")`);  // DANGEROUS!
 const script = `var name = "${userInput}";`;  // DANGEROUS!
 ```
 
-### Safe Alternative
+### Safe Alternatives
 ```javascript
 // Use JSON for data passing
 const config = JSON.parse(safeJSONString);
+
+// Use data attributes
+<div data-user-name={sanitizedName}></div>
+
+// Pass through proper APIs
+window.postMessage({ name: userName }, targetOrigin);
 ```
 
 </v-clicks>
@@ -422,7 +431,9 @@ User input in style attributes or stylesheets
 ### Risks
 <v-clicks>
 
+- `expression()` in IE (legacy)
 - `url()` can load external resources
+- `-moz-binding` (Firefox legacy)
 
 </v-clicks>
 
@@ -439,7 +450,17 @@ element.style = style;
 // red; background: url('evil.com/track')
 
 // Safe approach
-element.style.propery = x;
+// Whitelist allowed properties
+const allowedColors = {
+  red: '#ff0000',
+  blue: '#0000ff',
+  green: '#00ff00'
+};
+
+const color = allowedColors[userInput];
+if (color) {
+  element.style.color = color;
+}
 ```
 
 </div>
@@ -470,15 +491,24 @@ Handling user input in URLs
 ### Dangerous Schemes
 - `javascript:` - executes JS
 - `data:` - can contain HTML/JS
-- DOM based XSS
 
 ### Safe Approach
 ```javascript
-// unsafe
-const unsafeHref = "http://www.owasp.org?test=$varUnsafe";
+function isSafeURL(url) {
+  try {
+    const parsed = new URL(url);
+    // Only allow http, https, mailto
+    return ['http:', 'https:', 'mailto:'].includes(parsed.protocol);
+  } catch {
+    return false;
+  }
+}
 
-// better
-const safeHref = window.encodeURIComponent(href);
+// Usage
+const link = document.createElement('a');
+if (isSafeURL(userInput)) {
+  link.href = userInput;
+}
 ```
 
 </v-clicks>
@@ -671,17 +701,22 @@ layout: default
 
 # react-hook-form Example
 
-```typescript {all|1|2-4|6|12-22|7-10|all}
+```typescript {all|1|3-8|10-14|16-26|28-36|all}
 import { useForm } from 'react-hook-form';
+
 interface LoginFormData {
   email: string;
+  password: string;
 }
+
 function LoginForm() {
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormData>();
+
   const onSubmit = (data: LoginFormData) => {
     // Data is already validated!
     console.log(data);
   };
+
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <input {...register('email', {
@@ -692,6 +727,16 @@ function LoginForm() {
         }
       })} />
       {errors.email && <span>{errors.email.message}</span>}
+
+      <input type="password" {...register('password', {
+        required: 'Password is required',
+        minLength: {
+          value: 8,
+          message: 'Password must be at least 8 characters'
+        }
+      })} />
+      {errors.password && <span>{errors.password.message}</span>}
+
       <button type="submit">Login</button>
     </form>
   );
@@ -759,7 +804,7 @@ layout: default
 
 # DOMPurify Example
 
-```javascript {all}
+```javascript {all|1|3-9|11-15|17-23|all}
 import DOMPurify from 'dompurify';
 
 // Basic sanitization
@@ -767,6 +812,31 @@ const dirty = '<img src=x onerror=alert(1)>';
 const clean = DOMPurify.sanitize(dirty);
 console.log(clean);
 // Output: <img src="x">
+
+// Custom configuration
+const clean = DOMPurify.sanitize(dirty, {
+  ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p'],
+  ALLOWED_ATTR: ['href'],
+  ALLOW_DATA_ATTR: false
+});
+
+// React component example
+function UserComment({ htmlContent }) {
+  const clean = DOMPurify.sanitize(htmlContent, {
+    ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'a'],
+    ALLOWED_ATTR: ['href']
+  });
+
+  return <div dangerouslySetInnerHTML={{ __html: clean }} />;
+}
+
+// Real-world example: sanitizing markdown output
+import { marked } from 'marked';
+
+function renderMarkdown(markdown) {
+  const html = marked(markdown);
+  return DOMPurify.sanitize(html);
+}
 ```
 
 <!--
