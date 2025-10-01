@@ -441,17 +441,7 @@ element.style = style;
 // red; background: url('evil.com/track')
 
 // Safe approach
-// Whitelist allowed properties
-const allowedColors = {
-  red: '#ff0000',
-  blue: '#0000ff',
-  green: '#00ff00'
-};
-
-const color = allowedColors[userInput];
-if (color) {
-  element.style.color = color;
-}
+element.style.propery = x;
 ```
 
 </div>
@@ -482,24 +472,15 @@ Handling user input in URLs
 ### Dangerous Schemes
 - `javascript:` - executes JS
 - `data:` - can contain HTML/JS
+- DOM based XSS
 
 ### Safe Approach
 ```javascript
-function isSafeURL(url) {
-  try {
-    const parsed = new URL(url);
-    // Only allow http, https, mailto
-    return ['http:', 'https:', 'mailto:'].includes(parsed.protocol);
-  } catch {
-    return false;
-  }
-}
+// unsafe
+const unsafeHref = "http://www.owasp.org?test=$varUnsafe";
 
-// Usage
-const link = document.createElement('a');
-if (isSafeURL(userInput)) {
-  link.href = userInput;
-}
+// better
+const safeHref = window.encodeURIComponent(href);
 ```
 
 </v-clicks>
