@@ -422,9 +422,7 @@ User input in style attributes or stylesheets
 ### Risks
 <v-clicks>
 
-- `expression()` in IE (legacy)
 - `url()` can load external resources
-- `-moz-binding` (Firefox legacy)
 
 </v-clicks>
 
