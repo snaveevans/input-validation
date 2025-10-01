@@ -219,10 +219,9 @@ Vulnerability exists in client-side code; server never sees the malicious payloa
 
 </v-clicks>
 
-```javascript {all|2-3|5-8|all}
+```javascript {all|1-3|5-7|all}
 // Attacker crafts URL
 // https://example.com/#<img src=x onerror='alert(document.cookie)'>
-
 // No server interaction needed!
 
 // Vulnerable: reading from URL hash
