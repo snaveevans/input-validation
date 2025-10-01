@@ -2,51 +2,15 @@
 import { ref, computed } from 'vue';
 import DOMPurify from 'isomorphic-dompurify';
 
-interface FormData {
-  name: string;
-  email: string;
+interface Comment {
   comment: string;
+  timestamp: Date;
 }
 
-interface FormErrors {
-  name?: string;
-  email?: string;
-  comment?: string;
-}
-
-const formData = ref<FormData>({
-  name: '',
-  email: '',
-  comment: ''
-});
-
-const errors = ref<FormErrors>({});
-const submittedComments = ref<FormData[]>([]);
+const commentText = ref('');
+const error = ref('');
+const submittedComments = ref<Comment[]>([]);
 const showUnsanitized = ref(false);
-
-const validateName = (value: string): string | undefined => {
-  if (!value.trim()) {
-    return 'Name is required';
-  }
-  if (value.length < 2) {
-    return 'Name must be at least 2 characters';
-  }
-  if (value.length > 50) {
-    return 'Name must be less than 50 characters';
-  }
-  return undefined;
-};
-
-const validateEmail = (value: string): string | undefined => {
-  if (!value.trim()) {
-    return 'Email is required';
-  }
-  const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
-  if (!emailRegex.test(value)) {
-    return 'Invalid email address';
-  }
-  return undefined;
-};
 
 const validateComment = (value: string): string | undefined => {
   if (!value.trim()) {
@@ -61,45 +25,21 @@ const validateComment = (value: string): string | undefined => {
   return undefined;
 };
 
-const validateField = (field: keyof FormData) => {
-  switch (field) {
-    case 'name':
-      errors.value.name = validateName(formData.value.name);
-      break;
-    case 'email':
-      errors.value.email = validateEmail(formData.value.email);
-      break;
-    case 'comment':
-      errors.value.comment = validateComment(formData.value.comment);
-      break;
-  }
-};
-
-const validateForm = (): boolean => {
-  errors.value = {
-    name: validateName(formData.value.name),
-    email: validateEmail(formData.value.email),
-    comment: validateComment(formData.value.comment)
-  };
-
-  return !errors.value.name && !errors.value.email && !errors.value.comment;
+const validateField = () => {
+  error.value = validateComment(commentText.value) || '';
 };
 
 const handleSubmit = () => {
-  if (validateForm()) {
+  const validationError = validateComment(commentText.value);
+  if (!validationError) {
     submittedComments.value.push({
-      name: formData.value.name,
-      email: formData.value.email,
-      comment: formData.value.comment
+      comment: commentText.value,
+      timestamp: new Date()
     });
-
-    formData.value = {
-      name: '',
-      email: '',
-      comment: ''
-    };
-
-    errors.value = {};
+    commentText.value = '';
+    error.value = '';
+  } else {
+    error.value = validationError;
   }
 };
 
@@ -111,16 +51,12 @@ const sanitizeHTML = (html: string): string => {
 };
 
 const insertXSSExample = () => {
-  formData.value.comment = '<img src=x onerror="alert(\'XSS Attack!\')">';
+  commentText.value = '<img src=x onerror="alert(\'XSS Attack!\')">';
+  validateField();
 };
 
 const isFormValid = computed(() => {
-  return formData.value.name.trim() !== '' &&
-         formData.value.email.trim() !== '' &&
-         formData.value.comment.trim() !== '' &&
-         !errors.value.name &&
-         !errors.value.email &&
-         !errors.value.comment;
+  return commentText.value.trim() !== '' && !error.value;
 });
 </script>
 
@@ -135,46 +71,18 @@ const isFormValid = computed(() => {
 
         <form @submit.prevent="handleSubmit" class="demo-form">
           <div class="form-group">
-            <label for="name">Name</label>
-            <input
-              id="name"
-              v-model="formData.name"
-              @blur="validateField('name')"
-              @input="validateField('name')"
-              type="text"
-              placeholder="Enter your name"
-              :class="{ error: errors.name }"
-            />
-            <span v-if="errors.name" class="error-message">{{ errors.name }}</span>
-          </div>
-
-          <div class="form-group">
-            <label for="email">Email</label>
-            <input
-              id="email"
-              v-model="formData.email"
-              @blur="validateField('email')"
-              @input="validateField('email')"
-              type="email"
-              placeholder="Enter your email"
-              :class="{ error: errors.email }"
-            />
-            <span v-if="errors.email" class="error-message">{{ errors.email }}</span>
-          </div>
-
-          <div class="form-group">
             <label for="comment">Comment</label>
             <textarea
               id="comment"
-              v-model="formData.comment"
-              @blur="validateField('comment')"
-              @input="validateField('comment')"
+              v-model="commentText"
+              @blur="validateField"
+              @input="validateField"
               rows="4"
               placeholder="Enter your comment (min 10 characters)"
-              :class="{ error: errors.comment }"
+              :class="{ error: error }"
             />
-            <span v-if="errors.comment" class="error-message">{{ errors.comment }}</span>
-            <span class="char-count">{{ formData.comment.length }} / 500</span>
+            <span v-if="error" class="error-message">{{ error }}</span>
+            <span class="char-count">{{ commentText.length }} / 500</span>
           </div>
 
           <div class="button-group">
@@ -216,8 +124,10 @@ const isFormValid = computed(() => {
             class="comment-card"
           >
             <div class="comment-header">
-              <strong>{{ comment.name }}</strong>
-              <span class="comment-email">{{ comment.email }}</span>
+              <strong>User</strong>
+              <span class="comment-time">
+                {{ comment.timestamp.toLocaleTimeString() }}
+              </span>
             </div>
             <div class="comment-body">
               <div v-if="showUnsanitized" class="warning-banner">
@@ -423,7 +333,7 @@ button {
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.comment-email {
+.comment-time {
   font-size: 0.75rem;
   opacity: 0.6;
 }
